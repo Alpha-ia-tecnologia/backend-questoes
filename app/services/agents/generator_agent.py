@@ -101,6 +101,7 @@ def _select_template(query: Any, has_feedback: bool) -> str:
 
 
 # ── Mapeamento componente → arquivo de referência ──
+# Apenas Matemática e Língua Portuguesa (CN e CH removidos para velocidade)
 _COMPONENT_MAP = {
     "math": {
         "file": "app/prompts/math_skills_reference.txt",
@@ -118,24 +119,6 @@ _COMPONENT_MAP = {
             "língua portuguesa", "lingua portuguesa", "português", "portugues",
             "leitura", "escrita", "gramática", "interpretação de texto",
             "gênero textual", "ortografia", "produção textual",
-        ],
-    },
-    "science": {
-        "file": "app/prompts/science_skills_reference.txt",
-        "key": "science",
-        "keywords": [
-            "ciências da natureza", "ciencias da natureza", "ciências naturais",
-            "biologia", "física", "química", "ecologia",
-            "meio ambiente", "matéria", "energia", "célula",
-        ],
-    },
-    "humanities": {
-        "file": "app/prompts/humanities_skills_reference.txt",
-        "key": "humanities",
-        "keywords": [
-            "ciências humanas", "ciencias humanas", "humanas",
-            "história", "historia", "geografia",
-            "cidadania", "sociedade", "cultura", "território",
         ],
     },
 }
@@ -457,8 +440,8 @@ def generator_node(state: AgentState) -> AgentState:
             ),
             "math_skills_reference": skills_ref.get("math", ""),
             "portuguese_skills_reference": skills_ref.get("portuguese", ""),
-            "science_skills_reference": skills_ref.get("science", ""),
-            "humanities_skills_reference": skills_ref.get("humanities", "")
+            "science_skills_reference": "",
+            "humanities_skills_reference": ""
         }
         
         # Se houver textos reais encontrados, injeta no prompt

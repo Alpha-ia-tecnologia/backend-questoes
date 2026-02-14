@@ -4,7 +4,8 @@ Image Pipeline Nodes - Nós LangGraph para geração e validação de imagens.
 Integra a geração de imagens diretamente no pipeline de questões,
 com validação multimodal via Gemini Vision e retry automático.
 
-⚡ Otimização: geração e validação em PARALELO via ThreadPoolExecutor.
+🎯 Geração SEQUENCIAL: cada imagem é gerada após a questão completa,
+garantindo fidelidade entre questão e imagem.
 
 Fluxo:
     [quality_gate] → image_router_decision → image_generator → image_validator → image_quality_router
@@ -14,7 +15,6 @@ Fluxo:
 
 import logging
 from typing import Literal
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from app.services.agents.state import AgentState
 from app.services.progress_manager import get_current_progress
@@ -23,7 +23,6 @@ from app.schemas.question_schema import QuestionSchema
 logger = logging.getLogger(__name__)
 
 MAX_IMAGE_RETRIES = 2
-MAX_WORKERS = 4
 
 
 def image_router_decision(state: AgentState) -> Literal["image_generator", "__end__"]:
@@ -43,51 +42,15 @@ def image_router_decision(state: AgentState) -> Literal["image_generator", "__en
         return "__end__"
 
 
-def _generate_single_image(idx: int, q_data, corrections: str | None, retry_count: int) -> dict:
-    """Gera imagem para uma única questão (thread-safe)."""
-    from app.services.generate_image_agent_service import get_image_service
-    
-    try:
-        if isinstance(q_data, dict):
-            question = QuestionSchema(**q_data)
-        else:
-            question = q_data
-        
-        image_service = get_image_service()
-        
-        if corrections and retry_count > 0:
-            logger.info(f"🔄 Regenerando imagem {idx} com correções: {corrections[:100]}...")
-            result = image_service.generate_image_with_instructions(question, corrections)
-        else:
-            result = image_service.generate_image(question)
-        
-        logger.info(f"✅ Imagem gerada para questão {idx}")
-        return {
-            "question_index": idx,
-            "image_base64": result.image_base64,
-            "validation_status": "pending",
-            "attempts": retry_count + 1,
-            "corrections": None
-        }
-    except Exception as e:
-        logger.error(f"❌ Erro ao gerar imagem para questão {idx}: {e}")
-        return {
-            "question_index": idx,
-            "image_base64": None,
-            "validation_status": "error",
-            "attempts": retry_count + 1,
-            "error": str(e),
-            "corrections": None
-        }
-
-
 def image_generator_node(state: AgentState) -> dict:
     """
-    Gera imagens para TODAS as questões do batch EM PARALELO.
+    Gera imagens para TODAS as questões do batch SEQUENCIALMENTE.
     
-    Usa ThreadPoolExecutor para disparar todas as gerações simultaneamente,
-    reduzindo o tempo total de N*T para ~T (onde T é o tempo de 1 imagem).
+    Cada imagem é gerada uma por uma, após a questão estar completa,
+    garantindo que a imagem seja fidedigna ao conteúdo da questão.
     """
+    from app.services.generate_image_agent_service import get_image_service
+    
     progress = get_current_progress()
     questions = state.get("questions", [])
     existing_results = state.get("image_results") or []
@@ -95,22 +58,23 @@ def image_generator_node(state: AgentState) -> dict:
     
     if progress:
         progress.phase_start("image_generator", "Image Generation Agent", "🎨")
-        progress.log("image_generator", f"Generating {len(questions)} images in parallel ⚡", "", "🖼️")
+        progress.log("image_generator", f"Generating images for {len(questions)} questions", "", "🖼️")
     
-    # Separar questões que já têm imagem válida das que precisam gerar
-    tasks_to_generate = []
-    pre_validated = []
+    image_service = get_image_service()
+    image_results = []
     
     for idx, q_data in enumerate(questions):
+        # Verificar se já tem resultado válido de um ciclo anterior
         existing = next(
             (r for r in existing_results if r.get("question_index") == idx and r.get("validation_status") == "valid"),
             None
         )
         if existing:
             logger.info(f"✅ Questão {idx}: Imagem já válida, pulando")
-            pre_validated.append(existing)
+            image_results.append(existing)
             continue
         
+        # Verificar se há instruções de correção do validador
         corrections = None
         failed_result = next(
             (r for r in existing_results if r.get("question_index") == idx and r.get("validation_status") == "invalid"),
@@ -119,41 +83,52 @@ def image_generator_node(state: AgentState) -> dict:
         if failed_result:
             corrections = failed_result.get("corrections", "")
         
-        tasks_to_generate.append((idx, q_data, corrections))
-    
-    # Gerar em paralelo
-    image_results = list(pre_validated)
-    
-    if tasks_to_generate:
-        workers = min(MAX_WORKERS, len(tasks_to_generate))
-        logger.info(f"⚡ Disparando {len(tasks_to_generate)} gerações em paralelo ({workers} workers)")
-        
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            futures = {
-                executor.submit(_generate_single_image, idx, q_data, corrections, retry_count): idx
-                for idx, q_data, corrections in tasks_to_generate
-            }
+        try:
+            # Converter dict para QuestionSchema para o serviço
+            if isinstance(q_data, dict):
+                question = QuestionSchema(**q_data)
+            else:
+                question = q_data
             
-            for future in as_completed(futures):
-                result = future.result()
-                idx = result["question_index"]
-                
-                if progress:
-                    status = "✅" if result.get("image_base64") else "❌"
-                    title = ""
-                    if idx < len(questions):
-                        q = questions[idx]
-                        title = (q.get("title", "") if isinstance(q, dict) else getattr(q, "title", ""))[:40]
-                    progress.log("image_generator", f"{status} Image {idx + 1}: {title}...", "", "🎨")
-                
-                image_results.append(result)
-    
-    # Ordenar por índice para manter consistência
-    image_results.sort(key=lambda r: r.get("question_index", 0))
+            if progress:
+                progress.log(
+                    "image_generator",
+                    f"Generating image {idx + 1}/{len(questions)}: {question.title[:40]}...",
+                    corrections or "",
+                    "🎨"
+                )
+            
+            # Gerar com ou sem correções
+            if corrections and retry_count > 0:
+                logger.info(f"🔄 Regenerando imagem {idx} com correções: {corrections[:100]}...")
+                result = image_service.generate_image_with_instructions(question, corrections)
+            else:
+                result = image_service.generate_image(question)
+            
+            image_results.append({
+                "question_index": idx,
+                "image_base64": result.image_base64,
+                "validation_status": "pending",
+                "attempts": retry_count + 1,
+                "corrections": None
+            })
+            
+            logger.info(f"✅ Imagem gerada para questão {idx}")
+            
+        except Exception as e:
+            logger.error(f"❌ Erro ao gerar imagem para questão {idx}: {e}")
+            image_results.append({
+                "question_index": idx,
+                "image_base64": None,
+                "validation_status": "error",
+                "attempts": retry_count + 1,
+                "error": str(e),
+                "corrections": None
+            })
     
     if progress:
         generated_count = sum(1 for r in image_results if r.get("image_base64"))
-        progress.phase_end("image_generator", f"{generated_count}/{len(questions)} images generated ⚡")
+        progress.phase_end("image_generator", f"{generated_count}/{len(questions)} images generated")
     
     return {
         "image_results": image_results,
@@ -161,38 +136,14 @@ def image_generator_node(state: AgentState) -> dict:
     }
 
 
-def _validate_single_image(idx: int, q_data: dict, image_base64: str) -> dict:
-    """Valida uma única imagem (thread-safe)."""
-    from app.services.agents.image_validator_agent import get_image_validator_agent
-    
-    try:
-        validator = get_image_validator_agent()
-        validation = validator.validate(q_data, image_base64)
-        
-        is_valid = validation.get("valid", False)
-        score = validation.get("score", 0)
-        
-        return {
-            "question_index": idx,
-            "validation_status": "valid" if is_valid else "invalid",
-            "validation_score": score,
-            "validation_issues": validation.get("issues", []),
-            "corrections": validation.get("corrections", "") if not is_valid else None
-        }
-    except Exception as e:
-        logger.error(f"❌ Erro ao validar imagem {idx}: {e}")
-        return {
-            "question_index": idx,
-            "validation_status": "invalid",
-            "validation_issues": [str(e)],
-            "corrections": "Regenerar a imagem"
-        }
-
-
 def image_validator_node(state: AgentState) -> dict:
     """
-    Valida TODAS as imagens geradas EM PARALELO usando Gemini Vision.
+    Valida TODAS as imagens geradas usando Gemini Vision.
+    
+    Compara cada imagem com os dados da questão correspondente.
     """
+    from app.services.agents.image_validator_agent import get_image_validator_agent
+    
     progress = get_current_progress()
     questions = state.get("questions", [])
     image_results = state.get("image_results", [])
@@ -200,66 +151,67 @@ def image_validator_node(state: AgentState) -> dict:
     if progress:
         progress.phase_start("image_validator", "Image Validation Agent", "👁️")
     
-    # Separar resultados que precisam validação dos que já estão prontos
-    to_validate = []
-    already_done = []
+    validator = get_image_validator_agent()
+    validated_results = []
     
     for result in image_results:
         idx = result.get("question_index", 0)
         
+        # Pular resultados já válidos ou com erro
         if result.get("validation_status") in ("valid", "error"):
-            already_done.append(result)
+            validated_results.append(result)
             continue
         
         image_base64 = result.get("image_base64")
-        if not image_base64 or idx >= len(questions):
+        if not image_base64:
             result["validation_status"] = "error"
-            already_done.append(result)
+            validated_results.append(result)
             continue
         
-        q_data = questions[idx]
-        if not isinstance(q_data, dict):
-            q_data = q_data.model_dump() if hasattr(q_data, 'model_dump') else q_data.__dict__
+        # Obter dados da questão
+        if idx < len(questions):
+            q_data = questions[idx]
+            if not isinstance(q_data, dict):
+                q_data = q_data.model_dump() if hasattr(q_data, 'model_dump') else q_data.__dict__
+        else:
+            result["validation_status"] = "error"
+            validated_results.append(result)
+            continue
         
-        to_validate.append((idx, q_data, image_base64, result))
-    
-    # Validar em paralelo
-    validated_results = list(already_done)
-    
-    if to_validate:
-        workers = min(MAX_WORKERS, len(to_validate))
-        logger.info(f"⚡ Validando {len(to_validate)} imagens em paralelo ({workers} workers)")
+        if progress:
+            title = q_data.get("title", "N/A")[:40]
+            progress.log("image_validator", f"Validating image {idx + 1}: {title}...", "", "🔍")
         
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            futures = {}
-            for idx, q_data, image_base64, original_result in to_validate:
-                future = executor.submit(_validate_single_image, idx, q_data, image_base64)
-                futures[future] = original_result
+        # Validar com Gemini Vision
+        try:
+            validation = validator.validate(q_data, image_base64)
             
-            for future in as_completed(futures):
-                original_result = futures[future]
-                validation = future.result()
+            is_valid = validation.get("valid", False)
+            score = validation.get("score", 0)
+            
+            result["validation_status"] = "valid" if is_valid else "invalid"
+            result["validation_score"] = score
+            result["validation_issues"] = validation.get("issues", [])
+            result["corrections"] = validation.get("corrections", "") if not is_valid else None
+            
+            if progress:
+                status_icon = "✅" if is_valid else "❌"
+                progress.log(
+                    "image_validator",
+                    f"{status_icon} Image {idx + 1}: {'Approved' if is_valid else 'Rejected'} (score: {score})",
+                    ", ".join(validation.get("issues", [])) if not is_valid else "",
+                    status_icon
+                )
                 
-                # Merge validation into original result (preserving image_base64)
-                original_result.update(validation)
-                
-                if progress:
-                    is_valid = validation.get("validation_status") == "valid"
-                    score = validation.get("validation_score", 0)
-                    icon = "✅" if is_valid else "❌"
-                    idx = validation.get("question_index", 0)
-                    progress.log(
-                        "image_validator",
-                        f"{icon} Image {idx + 1}: {'Approved' if is_valid else 'Rejected'} (score: {score})",
-                        ", ".join(validation.get("validation_issues", [])) if not is_valid else "",
-                        icon
-                    )
-                
-                validated_results.append(original_result)
+        except Exception as e:
+            logger.error(f"❌ Erro ao validar imagem {idx}: {e}")
+            result["validation_status"] = "invalid"
+            result["validation_issues"] = [str(e)]
+            result["corrections"] = "Regenerar a imagem"
+        
+        validated_results.append(result)
     
-    # Ordenar por índice
-    validated_results.sort(key=lambda r: r.get("question_index", 0))
-    
+    # Contar resultados
     valid_count = sum(1 for r in validated_results if r.get("validation_status") == "valid")
     invalid_count = sum(1 for r in validated_results if r.get("validation_status") == "invalid")
     
