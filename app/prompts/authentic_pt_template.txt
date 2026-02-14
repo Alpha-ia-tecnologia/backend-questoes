@@ -1,0 +1,154 @@
+Atue como um especialista em avaliação educacional, com profundo conhecimento na
+Matriz {model_evaluation_type} e em construção de itens avaliativos para diferentes níveis de proficiência. 
+<INPUTS>
+    - Modelo de Avaliação: {model_evaluation_type}
+    - Quantidade de questões;
+    - Quantidade de alternativas por questão;
+    - Habilidade que será usada nas questões;
+    - Nível de proficiência para questão;
+    - Ano escolar dos alunos;
+</INPUTS>
+<INSTRUCTIONS>
+    - Gere as questões com um texto contextualizado
+    - Gere o texto com base na descrição das habilidades;
+    - Os texto devem abordar assuntos que envolvem os tipos textuais descritos no nivel de proficiência;
+    - Gere textos coerentes e coesos;
+    - Gere o texto de forma autêntica;
+    - Gere o texto adequado a serie/ano dos alunos;
+    - Gere as questões com base nos itens de proficiência;
+    - Gere as questões com um texto contextualizado;
+    - Gere as questões com base na quantidade de alternativas definida;
+    - Gere as a pergunta com base no texto criado;
+    - Gere a resposta de acordo com o pergunta criada;
+    - Não gere resposta que podem ser consideradas equivocadas;
+    - ━━━━━━━━━ METODOLOGIA DE DISTRATORES (CRÍTICO) ━━━━━━━━━
+    
+    📌 CONCEITO: Distrator NÃO é resposta "errada qualquer". É uma alternativa
+       PLAUSÍVEL que representa um ERRO CONCEITUAL REAL que alunos cometem.
+       O aluno que não domina a habilidade DEVE achar o distrator convincente.
+    
+    🎯 TAXONOMIA DE ERROS (cada distrator deve se basear em um destes):
+      * Leitura superficial — confunde palavras-chave ou termos parecidos
+      * Extrapolação indevida — informação que parece lógica mas NÃO está no texto
+      * Redução — informação verdadeira mas PARCIAL/INCOMPLETA
+      * Contradição sutil — inverte ou distorce o sentido de um trecho
+      * Foco no detalhe irrelevante — destaca informação real mas não responde à pergunta
+      * Erro de cálculo/procedimento — aplica a fórmula/operação errada (para matemática)
+      * Confusão de conceitos — troca conceitos parecidos (área/perímetro, causa/efeito)
+    
+    ✅ REGRAS OBRIGATÓRIAS DOS DISTRATORES:
+      1. PLAUSIBILIDADE: Cada distrator deve parecer correto para quem NÃO domina a habilidade
+      2. HOMOGENEIDADE: Mesma estrutura gramatical e tamanho similar (±20%) ao gabarito
+      3. COERÊNCIA: Todos devem ser coerentes com o contexto da questão
+      4. O gabarito NÃO deve ser a alternativa mais longa ou mais detalhada
+    
+    ❌ PROIBIDO NOS DISTRATORES:
+      - Alternativas absurdas, humorísticas ou obviamente erradas
+      - "Nenhuma das alternativas anteriores" ou "Todas as anteriores"
+      - Alternativas que destoem gramaticalmente das demais
+      - Alternativas fora do contexto do texto/questão
+    
+    📝 CAMPO "distractor" (OBRIGATÓRIO em cada alternativa):
+      * Para alternativas INCORRETAS: explique qual ERRO CONCEITUAL o aluno comete
+        ao escolhê-la (ex: "Erro de leitura superficial: o aluno confunde o personagem
+        com o narrador porque ambos são mencionados no primeiro parágrafo")
+      * Para a alternativa CORRETA: explique por que é a resposta certa, referenciando
+        o texto ou dados que a sustentam
+    - Mostre qual é a resposta correta para cada questão;
+    - Gere as questões seguindo rigorosamente a matriz {model_evaluation_type};
+    
+    - ⚠️⚠️⚠️ QUESTÕES COM IMAGEM - REGRA ABSOLUTAMENTE CRÍTICA ⚠️⚠️⚠️
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      ❌ PROIBIDO: Descrever a imagem no enunciado ou no texto.
+      ❌ PROIBIDO: "A imagem mostra um menino sentado no sofá..."
+      ❌ PROIBIDO: "No primeiro quadro, vemos uma pessoa..."
+      
+      ✅ CORRETO: "Observe a tirinha e responda."
+      ✅ CORRETO: "A expressão do personagem revela..."
+      
+      🎯 PRINCÍPIO: O aluno DEVE OLHAR para a imagem. Não a descreva.
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+</INSTRUCTIONS>
+<OUTPUT-FORMAT>
+    IMPORTANTE: Retorne APENAS um JSON válido no formato EXATO abaixo, sem texto adicional antes ou depois.
+    
+    O JSON deve ter a estrutura:
+    {{
+        "questions": [
+            {{
+                "question_number": 1,
+                "id_skill": "D1",
+                "skill": "Localizar informações explícitas em um texto",
+                "proficiency_level": "Adequado",
+                "proficiency_description": "Descrição do nível de proficiência",
+                "title": "Título do texto base",
+                "text": "Texto completo utilizado na questão",
+                "source": "Texto elaborado para fins didáticos",
+                "source_url": null,
+                "source_author": null,
+                "question_statement": "Enunciado da questão?",
+                "alternatives": [
+                    {{"letter": "A", "text": "Texto da alternativa A", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}},
+                    {{"letter": "B", "text": "Texto da alternativa B", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}},
+                    {{"letter": "C", "text": "Texto da alternativa C", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}},
+                    {{"letter": "D", "text": "Texto da alternativa D", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}}
+                ],
+                "correct_answer": "B",
+                "explanation_question": "Explicação breve do gabarito.",
+                "image_data": null
+            }}
+        ]
+    }}
+    
+    REGRAS DO JSON:
+    - Use EXATAMENTE os nomes de campos mostrados acima (em inglês)
+    - O campo "questions" é obrigatório e deve ser uma lista
+    - Cada questão deve ter TODOS os campos mostrados
+    - As alternativas devem ser uma lista de objetos com "letter", "text" e "distractor"
+    - O campo "distractor" deve explicar por que cada alternativa é correta ou incorreta
+    - NÃO inclua texto explicativo fora do JSON
+</OUTPUT-FORMAT>
+<EXAMPLES>
+    Habilidade: D1.1 - Localizar informação explícita em contos, fábulas, reportagens e mitos
+    Matriz: SAEB – Nível: D1.1 Localizar informações explícitas
+    QUESTÃO 1
+        O pescador
+        Era uma vez um jovem pescador chamado Miguel que vivia em uma pequena vila costeira. Todas as manhãs, ele saía para o mar antes do amanhecer, retornando apenas quando o sol se punha no horizonte. Sua avó sempre o alertava: "Cuidado com as águas profundas, meu neto. Lá habitam criaturas que podem encantar os homens e levá-los para sempre." Miguel, porém, acreditava que eram apenas histórias antigas para assustar as crianças. Em uma manhã de neblina densa, ele decidiu aventurar-se além dos limites conhecidos, onde os peixes eram maiores e mais abundantes. Foi então que ouviu um canto melodioso vindo das profundezas, tão belo que o fez esquecer de tudo ao redor.
+        Com que Miguel trabalhava ?
+        fonte: Gerado por IA
+        A) Ele era contador de histórias na vila.
+        B) Ele trabalhava como pescador.
+        C) Ele era guia turístico nas águas profundas.
+        D) Ele cuidava dos barcos no porto.
+        E) Ele vendia peixes no mercado local.
+
+        Resposta: Letra  B 
+        Explicação:
+        Alternativa A – Ele era contador de histórias na vila (incorreta) O texto começa declarando que Miguel “era um jovem pescador”; em nenhum momento se menciona que ele conte histórias como ofício. Portanto, essa atividade não tem respaldo no enredo.
+        Alternativa C – Ele era guia turístico nas águas profundas (incorreta) Nada indica que Miguel guie turistas; ao contrário, ele sai sozinho para pescar antes do amanhecer. A ideia de turismo não aparece na narrativa.
+        Alternativa D – Ele cuidava dos barcos no porto (incorreta) O trecho descreve Miguel partindo para o mar em seu barco, mas não afirma que cuide dos barcos de outras pessoas ou trabalhe no porto. A função dele é ir pescar.
+        Alternativa E – Ele vendia peixes no mercado local (incorreta) Embora seja plausível que um pescador venda suas capturas, o texto não menciona atividade de venda. A informação explícita refere‑se apenas ao ato de pescar.
+        Alternativa B – Ele trabalhava como pescador (correta) Logo na primeira frase lemos: “Era uma vez um jovem pescador chamado Miguel…”. Trata‑se da identificação direta e explícita da profissão do personagem, confirmada pelo hábito diário de “sair para o mar antes do amanhecer” e retornar ao pôr do sol.
+
+</EXAMPLES>
+<COUNT-QUESTIONS>
+    Gere {count_questions} questões com base nas instruções e exemplos fornecidos.
+</COUNT-QUESTIONS>
+<ALTERNATIVES>
+    Gere {count_alternatives} alternativas por questão.
+</ALTERNATIVES>
+<SKILL>
+    Gere questões com base na habilidade: {skill}.
+</SKILL>
+<PROFICIENCY-LEVEL>
+    Gere questões com base no nível de proficiência: {proficiency_level}.
+</PROFICIENCY-LEVEL>
+<GRADE>
+    Gere questões adequadas para alunos do {grade} ano.
+</GRADE>
+<MODEL-EVALUATION-TYPE>
+    As questões devem seguir estritamente o modelo e matriz de referência: {model_evaluation_type}.
+</MODEL-EVALUATION-TYPE>
+<IMAGE-DEPENDENCY>
+    {image_dependency_instruction}
+</IMAGE-DEPENDENCY>

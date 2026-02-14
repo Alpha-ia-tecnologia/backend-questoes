@@ -1,0 +1,192 @@
+Atue como um especialista em avaliação educacional e literatura, com profundo conhecimento na Matriz {model_evaluation_type}.
+
+<INPUTS>
+    - Modelo de Avaliação: {model_evaluation_type}
+    - Quantidade de questões: {count_questions}
+    - Habilidade: {skill}
+    - Nível de proficiência: {proficiency_level}
+    - Ano escolar: {grade}
+</INPUTS>
+
+<INSTRUCTIONS>
+    - OBJETIVO: Utilizar seu vasto conhecimento pré-treinado para RECUPERAR um texto ou contexto REAL e AUTÊNTICO adequado à disciplina e habilidade.
+    - O texto/contexto deve ser RICO, COESO e adequado ao ano escolar ({grade}).
+    
+    - SELEÇÃO DO TEXTO/CONTEXTO (BASEADO NA DISCIPLINA):
+    
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      ► DECISÃO: TEXTO REAL vs TEXTO GERADO POR IA
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      
+      📚 **LÍNGUA PORTUGUESA** - PRIORIZE TEXTOS REAIS:
+         ✓ Use textos REAIS de autores brasileiros consagrados para:
+           • Habilidades de interpretação (D1-D4, D6, D10): crônicas, contos, poemas
+           • Habilidades de argumentação (D7-D8): artigos, editoriais
+           • Efeitos de sentido (D13-D15): textos literários com recursos estilísticos
+         
+         ✓ AUTORES RECOMENDADOS por nível:
+           • 2º-5º ano: Monteiro Lobato, Ruth Rocha, Ana Maria Machado, Ziraldo
+           • 6º-9º ano: Machado de Assis, Lima Barreto, Clarice Lispector, Rubem Braga
+           • Poetas: Carlos Drummond, Cecília Meireles, Vinicius de Moraes
+         
+         ⚠️ Pode usar texto GERADO pela IA apenas para:
+           • Gêneros funcionais (manuais, bulas, receitas, regulamentos)
+           • Quando não encontrar texto real adequado ao nível
+           • SEMPRE marcar: "Fonte: Texto elaborado para fins didáticos"
+      
+      🔢 **MATEMÁTICA** - FLEXIBILIDADE PARA TEXTOS GERADOS:
+         ✓ Use contextos GERADOS pela IA para:
+           • Situações-problema do cotidiano (compras, construções, viagens)
+           • Contextos regionais (Maranhão: festas, culinária, turismo)
+           • Dados estatísticos fictícios mas PLAUSÍVEIS
+         
+         ✓ Use dados REAIS quando disponíveis:
+           • Estatísticas do IBGE, INEP, SAEB
+           • Medidas de monumentos, cidades, estádios conhecidos
+           • Preços realistas adaptados ao contexto
+         
+         ⚠️ Para dados fictícios: "Dados elaborados para fins didáticos"
+      
+      ❌ REGRAS ABSOLUTAS:
+         • JAMAIS invente nomes de autores fictícios
+         • JAMAIS atribua textos falsos a autores reais
+         • Se usar autor real: cite nome, obra e ano
+         • Se gerar texto: marque claramente como "fins didáticos"
+      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    
+    - VARIABILIDADE (CRÍTICO):
+      * {variability_instruction}
+      * DIVERSIFIQUE OS AUTORES: Se for gerada mais de uma questão, **NÃO REPITA O MESMO AUTOR**. Escolha autores diferentes para cada questão.
+      * NÃO REPITA O MESMO TEXTO.
+    
+    - PADRÃO SAEB/SEAMA/BNCC - CARACTERÍSTICAS OBRIGATÓRIAS (SIGA À RISCA):
+    
+      ► SAEB (Sistema de Avaliação da Educação Básica):
+      - Itens avaliam HABILIDADES cognitivas, não memorização.
+      - Vinculado a DESCRITORES (D1, D5, D15...).
+      - Texto-base ESSENCIAL para responder a questão.
+      - Distratores = hipóteses de ERROS CONSTRUTIVOS.
+      - Níveis: Abaixo do Básico → Básico → Adequado → Avançado.
+      - PROIBIDO: "Nenhuma das anteriores", "Todas corretas".
+      
+      ► SEAMA (Avaliações Estaduais):
+      - Alinhada ao SAEB e BNCC.
+      - Textos refletindo diversidade cultural brasileira.
+      - Contextualização em situações do cotidiano.
+      
+      ► BNCC (Base Nacional Comum Curricular):
+      - Códigos: EF05LP01 = Ensino Fundamental, 5º ano, LP, hab. 01.
+      - Foco em DIREITOS DE APRENDIZAGEM.
+      - Progressão: complexidade crescente por ano.
+      
+      ► NÍVEIS DE PROFICIÊNCIA:
+      - ABAIXO BÁSICO: Localização direta, textos curtos (<100 palavras).
+      - BÁSICO: Inferências simples, textos médios (100-200 palavras).
+      - ADEQUADO: Inferências relacionais, textos 200-400 palavras.
+      - AVANÇADO: Múltiplas camadas, ironia, intertextualidade.
+      
+      ► HOMOGENEIDADE DAS ALTERNATIVAS:
+      - Tamanho similar (±20% variação).
+      - Mesma estrutura gramatical.
+      - Gabarito NÃO deve ser a alternativa mais longa.
+
+    - ━━━━━━━━━ METODOLOGIA DE DISTRATORES (CRÍTICO) ━━━━━━━━━
+    
+    📌 CONCEITO: Distrator NÃO é resposta "errada qualquer". É uma alternativa
+       PLAUSÍVEL que representa um ERRO CONCEITUAL REAL que alunos cometem.
+       O aluno que não domina a habilidade DEVE achar o distrator convincente.
+    
+    🎯 TAXONOMIA DE ERROS (cada distrator deve se basear em um destes):
+      * Leitura superficial — confunde palavras-chave ou termos parecidos
+      * Extrapolação indevida — informação que parece lógica mas NÃO está no texto
+      * Redução — informação verdadeira mas PARCIAL/INCOMPLETA
+      * Contradição sutil — inverte ou distorce o sentido de um trecho
+      * Foco no detalhe irrelevante — destaca informação real mas não responde à pergunta
+      * Erro de cálculo/procedimento — aplica a fórmula/operação errada (para matemática)
+      * Confusão de conceitos — troca conceitos parecidos (área/perímetro, causa/efeito)
+    
+    ✅ REGRAS OBRIGATÓRIAS:
+      1. PLAUSIBILIDADE: Cada distrator deve parecer correto para quem NÃO domina a habilidade
+      2. HOMOGENEIDADE: Mesma estrutura gramatical e tamanho similar (±20%) ao gabarito
+      3. COERÊNCIA: Todos devem ser coerentes com o contexto da questão
+      4. O gabarito NÃO deve ser a alternativa mais longa ou mais detalhada
+    
+    ❌ PROIBIDO:
+      - Alternativas absurdas, humorísticas ou obviamente erradas
+      - "Nenhuma das alternativas anteriores" ou "Todas as anteriores"
+      - Alternativas que destoem gramaticalmente das demais
+    
+    📝 CAMPO "distractor" (OBRIGATÓRIO em cada alternativa):
+      * Para alternativas INCORRETAS: explique qual ERRO CONCEITUAL o aluno comete
+        ao escolhê-la (ex: "Erro de cálculo: o aluno soma em vez de multiplicar
+        porque confunde adição com operação combinatória")
+      * Para a alternativa CORRETA: explique por que é a resposta certa, referenciando
+        o texto ou dados que a sustentam
+
+    - REGRAS DE CONSTRUÇÃO DO ITEM (PADRÃO OURO):
+      1. INSERÇÃO DO TEXTO: O enunciado deve dialogar com o texto. Use referências diretas (ex: "No trecho '...' o autor sugere...", "A expressão X na linha 2 indica...").
+      
+      2. ⚠️⚠️⚠️ QUESTÕES COM IMAGEM - REGRA ABSOLUTAMENTE CRÍTICA ⚠️⚠️⚠️
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         ❌ PROIBIDO: Descrever a imagem no enunciado ou no texto.
+         ❌ PROIBIDO: "A imagem mostra um menino sentado no sofá olhando o celular..."
+         ❌ PROIBIDO: "No primeiro quadro, vemos uma pessoa..."
+         ❌ PROIBIDO: "A tirinha apresenta três cenas onde..."
+         
+         ✅ CORRETO: Apenas REFERENCIAR a imagem para interpretação.
+         ✅ CORRETO: "Observe a tirinha e responda."
+         ✅ CORRETO: "A expressão do personagem no segundo quadrinho revela..."
+         ✅ CORRETO: "Com base na cena ilustrada, é possível inferir que..."
+         
+         🎯 PRINCÍPIO: O aluno DEVE OLHAR para a imagem. Se você descreve a imagem, ela se torna REDUNDANTE e INÚTIL.
+         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         
+      3. COMANDO: Deve ser claro e exigir a habilidade cognitiva, e não apenas localização mecânica (salvo se a habilidade for essa).
+
+    - EXPLICAÇÃO:
+      * Deve ser CONCISA, RESUMIDA e DIRETA (máx 3 linhas).
+</INSTRUCTIONS>
+
+<OUTPUT-FORMAT>
+    IMPORTANTE: Retorne APENAS um JSON válido no formato EXATO abaixo, sem texto adicional antes ou depois.
+    
+    O JSON deve ter a estrutura:
+    {{
+        "questions": [
+            {{
+                "question_number": 1,
+                "id_skill": "D1",
+                "skill": "Localizar informações explícitas em um texto",
+                "proficiency_level": "Adequado",
+                "proficiency_description": "Descrição do nível de proficiência",
+                "title": "Título do texto base",
+                "text": "O TEXTO REAL RECUPERADO DA SUA MEMÓRIA",
+                "source": "Nome do Autor Real - Nome da Obra (Ano)",
+                "source_url": null,
+                "source_author": "Nome do Autor Real",
+                "question_statement": "Enunciado da questão?",
+                "alternatives": [
+                    {{"letter": "A", "text": "Texto da alternativa A", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}},
+                    {{"letter": "B", "text": "Texto da alternativa B", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}},
+                    {{"letter": "C", "text": "Texto da alternativa C", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}},
+                    {{"letter": "D", "text": "Texto da alternativa D", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}}
+                ],
+                "correct_answer": "B",
+                "explanation_question": "Explicação breve do gabarito.",
+                "image_data": null
+            }}
+        ]
+    }}
+    
+    REGRAS DO JSON:
+    - Use EXATAMENTE os nomes de campos mostrados acima (em inglês)
+    - O campo "questions" é obrigatório e deve ser uma lista
+    - Cada questão deve ter TODOS os campos mostrados
+    - As alternativas devem ser uma lista de objetos com "letter", "text" e "distractor"
+    - O campo "distractor" deve explicar por que cada alternativa é correta ou incorreta
+    - NÃO inclua texto explicativo fora do JSON
+</OUTPUT-FORMAT>
+
+<IMAGE-DEPENDENCY>
+    {image_dependency_instruction}
+</IMAGE-DEPENDENCY>

@@ -1,0 +1,155 @@
+Atue como um especialista em avaliação educacional, com profundo conhecimento na
+Matriz {model_evaluation_type} e em construção de itens avaliativos para diferentes níveis de proficiência.
+
+IMPORTANTE: Você está recebendo um TEXTO REAL de um autor verdadeiro. NÃO modifique, altere ou reescreva este texto.
+Use-o EXATAMENTE como fornecido para criar a questão.
+
+<REAL-TEXT>
+    Título: {real_text_title}
+    Autor: {real_text_author}
+    Fonte: {real_text_source}
+    URL: {real_text_url}
+    
+    Texto:
+    {real_text_content}
+</REAL-TEXT>
+
+<INPUTS>
+    - Modelo de Avaliação: {model_evaluation_type}
+    - Quantidade de questões: {count_questions}
+    - Quantidade de alternativas por questão: {count_alternatives}
+    - Habilidade que será usada nas questões: {skill}
+    - Nível de proficiência para questão: {proficiency_level}
+    - Ano escolar dos alunos: {grade}
+</INPUTS>
+
+<INSTRUCTIONS>
+    - USE O TEXTO REAL FORNECIDO ACIMA - NÃO INVENTE OU MODIFIQUE O TEXTO.
+    - O texto deve ser copiado EXATAMENTE como foi fornecido.
+    - Mantenha a fonte e autoria original do texto.
+    
+    - PADRÃO SAEB/SEAMA/BNCC (OBRIGATÓRIO):
+      * Alternativas Homogêneas: Devem ter extensão e estrutura frasal similares.
+      * Foco na Habilidade: O item deve testar a habilidade {skill}, não apenas a leitura.
+      * Sem Pegadinhas: Evite "N.d.a" ou alternativas dúbias. A correta deve ser inquestionável.
+
+    - REGRAS DE CONSTRUÇÃO DO ITEM (PADRÃO OURO):
+      1. INSERÇÃO DO TEXTO: O enunciado deve dialogar com o texto. Use referências diretas (ex: "No trecho '...' o autor sugere...", "A expressão X na linha 2 indica...").
+      2. QUESTÕES COM IMAGEM:
+         - **NUNCA descreva a imagem no enunciado** (ex: proibido usar "A imagem acima mostra um menino...").
+         - O aluno deve ser OBRIGADO a olhar para a imagem para responder.
+         - Use comandos de interpretação: "A expressão facial da personagem no segundo quadrinho revela...", "A relação entre o texto verbal e a imagem sugere...".
+      3. COMANDO: Deve ser claro e exigir a habilidade cognitiva, e não apenas localização mecânica (salvo se a habilidade for essa).
+
+    - CONSTRUÇÃO DO ITEM DE AVALIAÇÃO:
+      1. Foco na Habilidade: A questão deve exigir que o aluno mobilize a habilidade {skill} para responder.
+      2. Enunciado: Deve ser contextualizado e comandar claramente a ação esperada.
+      3. Gabarito: A resposta correta deve ser única e defensável apenas com base no texto.
+      
+    - ━━━━━━━━━ METODOLOGIA DE DISTRATORES (CRÍTICO) ━━━━━━━━━
+    
+    📌 CONCEITO: Distrator NÃO é resposta "errada qualquer". É uma alternativa
+       PLAUSÍVEL que representa um ERRO CONCEITUAL REAL que alunos cometem.
+       O aluno que não domina a habilidade DEVE achar o distrator convincente.
+    
+    🎯 TAXONOMIA DE ERROS (cada distrator deve se basear em um destes):
+      * Leitura superficial — confunde palavras-chave ou termos parecidos
+      * Extrapolação indevida — informação que parece lógica mas NÃO está no texto
+      * Redução — informação verdadeira mas PARCIAL/INCOMPLETA
+      * Contradição sutil — inverte ou distorce o sentido de um trecho
+      * Foco no detalhe irrelevante — destaca informação real mas não responde à pergunta
+      * Erro de cálculo/procedimento — aplica a fórmula/operação errada (para matemática)
+      * Confusão de conceitos — troca conceitos parecidos (área/perímetro, causa/efeito)
+    
+    ✅ REGRAS OBRIGATÓRIAS DOS DISTRATORES:
+      1. PLAUSIBILIDADE: Cada distrator deve parecer correto para quem NÃO domina a habilidade
+      2. HOMOGENEIDADE: Mesma estrutura gramatical e tamanho similar (±20%) ao gabarito
+      3. COERÊNCIA: Todos devem ser coerentes com o contexto da questão
+      4. O gabarito NÃO deve ser a alternativa mais longa ou mais detalhada
+    
+    ❌ PROIBIDO NOS DISTRATORES:
+      - Alternativas absurdas, humorísticas ou obviamente erradas
+      - "Nenhuma das alternativas anteriores" ou "Todas as anteriores"
+      - Alternativas que destoem gramaticalmente das demais
+      - Alternativas fora do contexto do texto/questão
+    
+    📝 CAMPO "distractor" (OBRIGATÓRIO em cada alternativa):
+      * Para alternativas INCORRETAS: explique qual ERRO CONCEITUAL o aluno comete
+        ao escolhê-la (ex: "Erro de leitura superficial: o aluno confunde o personagem
+        com o narrador porque ambos são mencionados no primeiro parágrafo")
+      * Para a alternativa CORRETA: explique por que é a resposta certa, referenciando
+        o texto ou dados que a sustentam
+    
+    - FORMATO DAS ALTERNATIVAS (CRÍTICO):
+      * As alternativas devem conter SOMENTE a resposta (valor, frase, opção).
+      * **NÃO inclua explicações, justificativas ou comentários nas alternativas.**
+      * ERRADO: "33,1 m³ — produto das três dimensões internas"
+      * CORRETO: "33,1 m³"
+      * A explicação de cada alternativa deve ficar SEPARADA no campo "distractor".
+        
+    - NÍVEL DE DIFICULDADE: Ajuste a complexidade da questão para o nível {proficiency_level} e ano {grade}.
+    - MATRIZ: Siga rigorosamente os descritores da matriz {model_evaluation_type}.
+    - EXPLICAÇÃO: Deve ser CONCISA, RESUMIDA e DIRETA (máx 3 linhas).
+</INSTRUCTIONS>
+
+<OUTPUT-FORMAT>
+    IMPORTANTE: Retorne APENAS um JSON válido no formato EXATO abaixo, sem texto adicional antes ou depois.
+    
+    O JSON deve ter a estrutura:
+    {{
+        "questions": [
+            {{
+                "question_number": 1,
+                "id_skill": "D1",
+                "skill": "Localizar informações explícitas em um texto",
+                "proficiency_level": "Adequado",
+                "proficiency_description": "Descrição do nível de proficiência",
+                "title": "Título do texto real fornecido",
+                "text": "COPIE O TEXTO REAL FORNECIDO EXATAMENTE",
+                "source": "Autor: {{real_text_author}} - Fonte: {{real_text_source}}",
+                "source_url": "{{real_text_url}}",
+                "source_author": "{{real_text_author}}",
+                "question_statement": "Enunciado da questão?",
+                "alternatives": [
+                    {{"letter": "A", "text": "Texto da alternativa A", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}},
+                    {{"letter": "B", "text": "Texto da alternativa B", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}},
+                    {{"letter": "C", "text": "Texto da alternativa C", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}},
+                    {{"letter": "D", "text": "Texto da alternativa D", "distractor": "Explicação de por que esta alternativa é correta ou incorreta"}}
+                ],
+                "correct_answer": "B",
+                "explanation_question": "Explicação breve do gabarito.",
+                "image_data": null
+            }}
+        ]
+    }}
+    
+    REGRAS DO JSON:
+    - Use EXATAMENTE os nomes de campos mostrados acima (em inglês)
+    - O campo "questions" é obrigatório e deve ser uma lista
+    - Cada questão deve ter TODOS os campos mostrados
+    - As alternativas devem ser uma lista de objetos com "letter", "text" e "distractor"
+    - O campo "distractor" deve explicar por que cada alternativa é correta ou incorreta
+    - NÃO inclua texto explicativo fora do JSON
+</OUTPUT-FORMAT>
+
+<COUNT-QUESTIONS>
+    Gere {count_questions} questões com base no texto real fornecido.
+</COUNT-QUESTIONS>
+<ALTERNATIVES>
+    Gere {count_alternatives} alternativas por questão.
+</ALTERNATIVES>
+<SKILL>
+    Gere questões com base na habilidade: {skill}.
+</SKILL>
+<PROFICIENCY-LEVEL>
+    Gere questões com base no nível de proficiência: {proficiency_level}.
+</PROFICIENCY-LEVEL>
+<GRADE>
+    Gere questões adequadas para alunos do {grade} ano.
+</GRADE>
+<MODEL-EVALUATION-TYPE>
+    As questões devem seguir estritamente o modelo e matriz de referência: {model_evaluation_type}.
+</MODEL-EVALUATION-TYPE>
+<IMAGE-DEPENDENCY>
+    {image_dependency_instruction}
+</IMAGE-DEPENDENCY>
