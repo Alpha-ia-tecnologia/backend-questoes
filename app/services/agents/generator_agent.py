@@ -100,6 +100,100 @@ def _select_template(query: Any, has_feedback: bool) -> str:
         return get_prompt(AgentPromptTemplates.SOURCE_PT_TEMPLATE)
 
 
+# ── Mapeamento componente → arquivo de referência ──
+_COMPONENT_MAP = {
+    "math": {
+        "file": "app/prompts/math_skills_reference.txt",
+        "key": "math",
+        "keywords": [
+            "matemática", "matematica", "math",
+            "álgebra", "geometria", "aritmética", "estatística",
+            "probabilidade", "grandezas", "medidas", "números",
+        ],
+    },
+    "portuguese": {
+        "file": "app/prompts/portuguese_skills_reference.txt",
+        "key": "portuguese",
+        "keywords": [
+            "língua portuguesa", "lingua portuguesa", "português", "portugues",
+            "leitura", "escrita", "gramática", "interpretação de texto",
+            "gênero textual", "ortografia", "produção textual",
+        ],
+    },
+    "science": {
+        "file": "app/prompts/science_skills_reference.txt",
+        "key": "science",
+        "keywords": [
+            "ciências da natureza", "ciencias da natureza", "ciências naturais",
+            "biologia", "física", "química", "ecologia",
+            "meio ambiente", "matéria", "energia", "célula",
+        ],
+    },
+    "humanities": {
+        "file": "app/prompts/humanities_skills_reference.txt",
+        "key": "humanities",
+        "keywords": [
+            "ciências humanas", "ciencias humanas", "humanas",
+            "história", "historia", "geografia",
+            "cidadania", "sociedade", "cultura", "território",
+        ],
+    },
+}
+
+
+def _load_skills_reference_for(query) -> dict[str, str]:
+    """
+    Carrega APENAS a referência de habilidades do componente curricular correto.
+    
+    Reduz o prompt de ~97KB (4 arquivos) para ~17-31KB (1 arquivo),
+    acelerando significativamente a resposta do LLM.
+    """
+    component = getattr(query, "curriculum_component", "").lower().strip()
+    skill = getattr(query, "skill", "").lower().strip()
+    search_text = f"{component} {skill}"
+    
+    # Detecta componente por keywords
+    detected = None
+    best_score = 0
+    
+    for comp_id, info in _COMPONENT_MAP.items():
+        score = sum(1 for kw in info["keywords"] if kw in search_text)
+        if score > best_score:
+            best_score = score
+            detected = comp_id
+    
+    # Se não detectou, tenta pelo curriculum_component direto
+    if not detected and component:
+        for comp_id, info in _COMPONENT_MAP.items():
+            if comp_id in component or info["key"] in component:
+                detected = comp_id
+                break
+    
+    result = {}
+    
+    if detected:
+        info = _COMPONENT_MAP[detected]
+        ref_path = os.path.abspath(info["file"])
+        try:
+            with open(ref_path, "r", encoding="utf-8") as f:
+                result[info["key"]] = f.read()
+            logger.info(f"⚡ Carregada referência: {detected} ({os.path.getsize(ref_path) // 1024}KB)")
+        except FileNotFoundError:
+            logger.warning(f"⚠️ {info['file']} não encontrado")
+    else:
+        # Fallback: componente não detectado → carrega todos (comportamento antigo)
+        logger.warning("⚠️ Componente não detectado — carregando todas as referências (fallback)")
+        for comp_id, info in _COMPONENT_MAP.items():
+            ref_path = os.path.abspath(info["file"])
+            try:
+                with open(ref_path, "r", encoding="utf-8") as f:
+                    result[info["key"]] = f.read()
+            except FileNotFoundError:
+                pass
+    
+    return result
+
+
 def generator_node(state: AgentState) -> AgentState:
     """
     Nó do Agente Gerador.
@@ -347,41 +441,8 @@ def generator_node(state: AgentState) -> AgentState:
    O aluno DEVE OLHAR a imagem + RACIOCINAR para responder."""
         }
         
-        # Carrega referência completa de habilidades matemáticas
-        math_ref_path = os.path.abspath("app/prompts/math_skills_reference.txt")
-        math_skills_ref = ""
-        try:
-            with open(math_ref_path, "r", encoding="utf-8") as f:
-                math_skills_ref = f.read()
-        except FileNotFoundError:
-            logger.warning("⚠️ math_skills_reference.txt não encontrado")
-        
-        # Carrega referência completa de habilidades de Língua Portuguesa
-        lp_ref_path = os.path.abspath("app/prompts/portuguese_skills_reference.txt")
-        portuguese_skills_ref = ""
-        try:
-            with open(lp_ref_path, "r", encoding="utf-8") as f:
-                portuguese_skills_ref = f.read()
-        except FileNotFoundError:
-            logger.warning("⚠️ portuguese_skills_reference.txt não encontrado")
-        
-        # Carrega referência completa de habilidades de Ciências da Natureza
-        cn_ref_path = os.path.abspath("app/prompts/science_skills_reference.txt")
-        science_skills_ref = ""
-        try:
-            with open(cn_ref_path, "r", encoding="utf-8") as f:
-                science_skills_ref = f.read()
-        except FileNotFoundError:
-            logger.warning("⚠️ science_skills_reference.txt não encontrado")
-        
-        # Carrega referência completa de habilidades de Ciências Humanas
-        ch_ref_path = os.path.abspath("app/prompts/humanities_skills_reference.txt")
-        humanities_skills_ref = ""
-        try:
-            with open(ch_ref_path, "r", encoding="utf-8") as f:
-                humanities_skills_ref = f.read()
-        except FileNotFoundError:
-            logger.warning("⚠️ humanities_skills_reference.txt não encontrado")
+        # ⚡ Carrega APENAS a referência do componente correto (~30KB vs ~97KB)
+        skills_ref = _load_skills_reference_for(query)
         
         # Prepara inputs para o template
         inputs = {
@@ -394,10 +455,10 @@ def generator_node(state: AgentState) -> AgentState:
             "image_dependency_instruction": image_instructions.get(
                 image_dep, image_instructions["none"]
             ),
-            "math_skills_reference": math_skills_ref,
-            "portuguese_skills_reference": portuguese_skills_ref,
-            "science_skills_reference": science_skills_ref,
-            "humanities_skills_reference": humanities_skills_ref
+            "math_skills_reference": skills_ref.get("math", ""),
+            "portuguese_skills_reference": skills_ref.get("portuguese", ""),
+            "science_skills_reference": skills_ref.get("science", ""),
+            "humanities_skills_reference": skills_ref.get("humanities", "")
         }
         
         # Se houver textos reais encontrados, injeta no prompt
